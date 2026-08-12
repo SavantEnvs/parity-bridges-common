@@ -1,0 +1,6 @@
+project: savantenvs/parity-bridges-common
+target: storage-proof-fuzzer
+duration: 300
+
+cmds:
+  - cmd: /mayhem/storage-proof-fuzzer

@@ -1,0 +1,51 @@
+# Additive cargo-fuzz crate for the Mayhem integration. Detached from the parent
+# workspace so `cargo fuzz build` only compiles this crate + polkadot-sdk deps.
+[package]
+name = "parity-bridges-common-fuzz"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.87"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+log = "0.4"
+env_logger = "0.11"
+
+# Pin the same polkadot-sdk rev as the parent workspace Cargo.lock (offline + reproducible).
+# Kept in step with upstream Cargo.lock (bp-runtime source rev) on each upstream resync.
+bp-runtime = { workspace = true, default-features = false, features = ["std"] }
+sp-core = { workspace = true, default-features = false, features = ["std"] }
+sp-runtime = { workspace = true, default-features = false, features = ["std"] }
+sp-state-machine = { workspace = true, default-features = false, features = ["std"] }
+sp-std = { workspace = true, default-features = false, features = ["std"] }
+sp-trie = { workspace = true, default-features = false, features = ["std"] }
+
+[[bin]]
+name = "main"
+path = "fuzz_targets/main.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "storage-proof-oracle"
+path = "../oracle.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
+
+[workspace.dependencies]
+bp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }
+sp-state-machine = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }
+sp-std = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }
+sp-trie = { git = "https://github.com/paritytech/polkadot-sdk", rev = "cde8a924504c99e768940bf6b600716725c3c438", default-features = false }

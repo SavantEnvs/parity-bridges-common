@@ -1,0 +1,73 @@
+# Additive cargo-fuzz crate for the Mayhem integration. Detached from the parent
+# workspace so `cargo fuzz build` only compiles this crate + its substrate deps.
+[package]
+name = "parity-bridges-common-fuzz"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.87"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+# Pinned to the exact version the original honggfuzz build resolved
+# (fuzz/storage-proof/Cargo.lock) — `arbitrary` changed how it decodes collections
+# after 1.1, which would re-frame every byte of the recorded crashers.
+arbitrary = { version = "=1.1.0", features = ["derive"] }
+log = "0.4"
+env_logger = "0.11"
+
+# Force the same schnorrkel line UPSTREAM's own Cargo.lock resolved (0.9.1, via sp-core's
+# MiniSecretKey use) so an unpinned substrate-bip39 doesn't drag in a newer, incompatible one.
+substrate-bip39 = "=0.4.4"
+
+# bp-runtime is THIS repo's own crate (primitives/runtime) — it only moved into the
+# polkadot-sdk monorepo in 2023, after UPSTREAM, so it must be fuzzed from the local
+# checkout, not a present-day polkadot-sdk republish of a different vulnerable surface.
+bp-runtime = { workspace = true, default-features = false, features = ["std"] }
+sp-core = { workspace = true, default-features = false, features = ["std"] }
+sp-runtime = { workspace = true, default-features = false, features = ["std"] }
+sp-state-machine = { workspace = true, default-features = false, features = ["std"] }
+sp-std = { workspace = true, default-features = false, features = ["std"] }
+sp-trie = { workspace = true, default-features = false, features = ["std"] }
+
+[[bin]]
+name = "main"
+path = "fuzz_targets/main.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "storage-proof-oracle"
+path = "../oracle.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
+
+[workspace.dependencies]
+bp-runtime = { path = "../../primitives/runtime", default-features = false }
+sp-core = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-state-machine = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+sp-trie = { git = "https://github.com/paritytech/substrate", branch = "master", default-features = false }
+
+# Freeze paritytech/substrate to the exact commit UPSTREAM's own Cargo.lock resolved on
+# branch sv-locked-for-gav-xcm-v3-and-bridges-2 (that branch has since moved/vanished) —
+# this fuzz crate is a detached workspace with no shared Cargo.lock, so an unpinned
+# "master"/branch dependency would fetch today's substrate HEAD instead.
+[patch."https://github.com/paritytech/substrate"]
+frame-support = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+frame-system = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-core = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-io = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-runtime = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-state-machine = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-std = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }
+sp-trie = { git = "https://github.com/paritytech//substrate", rev = "1bf2e6db6ccc0f9d872cddf9e3254227d100f2bf" }

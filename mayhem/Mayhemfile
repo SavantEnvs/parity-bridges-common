@@ -1,0 +1,8 @@
+project: savantenvs/parity-bridges-common
+target: storage-proof-fuzzer-buggy-mhh-run-34
+duration: 300
+# origin: https://app.mayhem.security/mayhemheroes/parity-bridges-common/storage-proof-fuzzer/34
+
+cmds:
+  - cmd: /mayhem/storage-proof-fuzzer
+    libfuzzer: true
